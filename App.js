@@ -9,21 +9,29 @@ import {
   Image,
 } from "react-native";
 import { alpfabet } from "./Alphabet";
-import { secretWordBox } from "./scretWord";
-import hangMan from "./assets/hangMan.png";
+import { hangMan } from "./hangMan";
+import lose from "./assets/lose.png";
+import gameOver from "./assets/gameOver.png";
+
 import { useEffect, useState } from "react";
 
 export default function App() {
+  const [imageIndex, setImageIndex] = useState(0);
+  const [image, setImage] = useState(hangMan[0]);
   const [word, setWord] = useState("BICICLETA");
   const [secretWord, setSecretWord] = useState();
   const [separateLetters, setSeparateLetters] = useState([]);
-  const [wordIndex, setWordIndex] = useState();
-  const [newFilteredWord, setNewFilteredWord] = useState();
+
+  const gameOverFunction = () => {
+    setImage(gameOver);
+  };
 
   useEffect(() => {
     setSeparateLetters(word.split(""));
   }, [word]);
-
+  useEffect(() => {
+    setImage(hangMan[imageIndex]);
+  }, [imageIndex]);
   useEffect(() => {
     const toObjects = separateLetters.map((val, index) => {
       return { id: index, value: val, visible: false };
@@ -31,7 +39,17 @@ export default function App() {
     setSecretWord(toObjects);
   }, [word, separateLetters]);
 
-  console.log("secretWord", secretWord);
+  // every time when it pulse a letter, if isn't present, change the index of image//
+  const changeNextImage = () => {
+    if (imageIndex < hangMan.length - 2) {
+      setImageIndex((previndex) => previndex + 1);
+    } else {
+      setImage(hangMan[6]);
+      setTimeout(gameOverFunction, 1000);
+      console.log("You lose !");
+    }
+  };
+  console.log(imageIndex);
 
   const searchLetter = (letter) => {
     const filteredWord = secretWord.map((object) => {
@@ -41,9 +59,21 @@ export default function App() {
         return object;
       }
     });
-    setSecretWord(filteredWord)
+    const coincidence = secretWord.filter((object) => object.value === letter);
+    if (coincidence.length > 0) {
+      console.log("cincidence");
+    } else {
+      changeNextImage();
+    }
+    setSecretWord(filteredWord);
   };
-  console.log("newfilteredWord", newFilteredWord);
+  if (imageIndex === 6) {
+    // setImage(lose);
+  }
+  const reset = () => {
+    setSeparateLetters(word.split(""));
+    setImageIndex(0);
+  };
 
   return (
     <View style={styles.container}>
@@ -53,9 +83,12 @@ export default function App() {
         </View>
       </SafeAreaView>
       <View style={styles.image}>
+        <TouchableOpacity onPress={reset}>
+          <Text>RESET </Text>
+        </TouchableOpacity>
         <Image
           style={{ width: "100%", height: "100%", resizeMode: "contain" }}
-          source={hangMan}
+          source={image}
         />
       </View>
 
@@ -121,7 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
   },
   visible: {
-    fontSize: 25,
+    fontSize: 30,
     fontWeight: "bold",
     display: "flex",
   },
@@ -130,7 +163,7 @@ const styles = StyleSheet.create({
   },
   letterBox: {
     margin: 2,
-    height: 55,
+    height: 45,
 
     width: 32,
     borderBottomWidth: 3,
