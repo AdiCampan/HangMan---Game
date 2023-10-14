@@ -35,14 +35,13 @@ export default function App() {
 
   const searchLetter = (letter) => {
     const filteredWord = secretWord.map((object) => {
-      console.log(letter);
       if (object.value === letter) {
         return { ...object, visible: true };
       } else {
         return object;
       }
     });
-    setNewFilteredWord(filteredWord);
+    setSecretWord(filteredWord)
   };
   console.log("newfilteredWord", newFilteredWord);
 
@@ -61,8 +60,8 @@ export default function App() {
       </View>
 
       <View style={styles.wordContainer}>
-        {newFilteredWord &&
-          newFilteredWord.map((letter, index) => (
+        {secretWord &&
+          secretWord.map((letter, index) => (
             <View key={index} style={styles.letterBox}>
               <Text style={letter.visible ? styles.visible : styles.hide}>
                 {letter.value}
