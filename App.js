@@ -42,15 +42,9 @@ export default function App() {
         return object;
       }
     });
-    // for (let i = 0; i < secretWord.length; i++) {
-    //   if (secretWord[i].value === letter) {
-    //     secretWord[i].visible = true;
-    //   }
-    // }
     setNewFilteredWord(filteredWord);
   };
   console.log("newfilteredWord", newFilteredWord);
-  // console.log("search letter", searchLetter("B"));
 
   return (
     <View style={styles.container}>
@@ -128,6 +122,8 @@ const styles = StyleSheet.create({
     fontSize: 23,
   },
   visible: {
+    fontSize: 25,
+    fontWeight: "bold",
     display: "flex",
   },
   hide: {
