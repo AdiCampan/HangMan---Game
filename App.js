@@ -12,21 +12,32 @@ import { alpfabet } from "./Alphabet";
 import { hangMan } from "./hangMan";
 import lose from "./assets/lose.png";
 import gameOver from "./assets/gameOver.png";
+import ConfettiCannon from "react-native-confetti-cannon";
+import winImage from "./assets/winner.png";
 
 import { useEffect, useState } from "react";
 
 export default function App() {
+  const [alphabetButtons, setAlphabetButtons] = useState();
   const [imageIndex, setImageIndex] = useState(0);
   const [image, setImage] = useState(hangMan[0]);
   const [word, setWord] = useState("BICICLETA");
   const [secretWord, setSecretWord] = useState();
   const [separateLetters, setSeparateLetters] = useState([]);
+  const [winner, setWinner] = useState(false);
 
   const gameOverFunction = () => {
-    setImage(gameOver);
+    setImage(lose);
   };
+  useEffect(() => {
+    const winnerFind = secretWord?.every((letter) => letter.visible === true);
+    if (winnerFind) {
+      setWinner(true);
+    }
+  }, [secretWord]);
 
   useEffect(() => {
+    setAlphabetButtons(alpfabet);
     setSeparateLetters(word.split(""));
   }, [word]);
   useEffect(() => {
@@ -49,30 +60,46 @@ export default function App() {
       console.log("You lose !");
     }
   };
-  console.log(imageIndex);
 
   const searchLetter = (letter) => {
     const filteredWord = secretWord.map((object) => {
-      if (object.value === letter) {
+      if (object.value === letter.value) {
         return { ...object, visible: true };
       } else {
         return object;
       }
     });
-    const coincidence = secretWord.filter((object) => object.value === letter);
+    const coincidence = secretWord.filter(
+      (object) => object.value === letter.value
+    );
     if (coincidence.length > 0) {
-      console.log("cincidence");
     } else {
       changeNextImage();
     }
     setSecretWord(filteredWord);
+
+    const filterLetter = alphabetButtons.map((object) => {
+      if (object.value === letter.value) {
+        return { ...object, visible: false };
+      } else {
+        return object;
+      }
+    });
+    setAlphabetButtons(filterLetter);
   };
-  if (imageIndex === 6) {
-    // setImage(lose);
-  }
+
   const reset = () => {
+    setWinner(false);
     setSeparateLetters(word.split(""));
     setImageIndex(0);
+    const filteredLeters = alphabetButtons.map((object) => {
+      if (object.visible === false) {
+        return { ...object, visible: true };
+      } else {
+        return object;
+      }
+    });
+    setAlphabetButtons(filteredLeters);
   };
 
   return (
@@ -83,11 +110,17 @@ export default function App() {
         </View>
       </SafeAreaView>
       <View style={styles.image}>
-        <TouchableOpacity onPress={reset}>
-          <Text>RESET </Text>
+        <TouchableOpacity onPress={reset} style={styles.resetButton}>
+          <Text style={{ fontSize: 12 }}> RESET </Text>
         </TouchableOpacity>
+        {winner && (
+          <Image
+            style={{ width: "80%", height: "100%", resizeMode: "contain" }}
+            source={winImage}
+          />
+        )}
         <Image
-          style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+          style={{ width: "80%", height: "100%", resizeMode: "contain" }}
           source={image}
         />
       </View>
@@ -103,21 +136,27 @@ export default function App() {
           ))}
       </View>
       <View style={styles.alphabetButtonsContainer}>
-        {alpfabet.map((letter, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.alphabetButton}
-            onPress={() => searchLetter(letter.value)}
-          >
-            <Text style={styles.alphabetLetters}>{letter.value}</Text>
-          </TouchableOpacity>
-        ))}
+        {alphabetButtons &&
+          alphabetButtons.map((letter, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.alphabetButton}
+              onPress={() => searchLetter(letter)}
+            >
+              <Text
+                style={letter.visible ? styles.alphabetLetters : styles.hide}
+              >
+                {letter.value}
+              </Text>
+            </TouchableOpacity>
+          ))}
       </View>
       <View style={styles.footBarContainer}>
         <Text style={styles.footBar}>
           Create By Noelia & Adrian Campan 2023
         </Text>
       </View>
+      {winner && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
       {/* <StatusBar style="auto" /> */}
     </View>
   );
@@ -140,7 +179,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "grey",
   },
+  resetButton: {
+    marginVertical: 20,
+    backgroundColor: "paleturquoise",
+    display: "flex",
+    borderRadius: 30,
+    borderWidth: 4,
+    borderStyle: "solid",
+    borderColor: "grey",
+    width: 55,
+    height: 55,
+    alignItems: "center",
+    justifyContent: "space-around",
+    alignContent: "center",
+  },
   image: {
+    display: "flex",
+    flexDirection: "row",
     width: "90%",
     height: 250,
   },
@@ -185,8 +240,8 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderStyle: "solid",
     borderColor: "blue",
-    width: 50,
-    height: 45,
+    width: 40,
+    height: 40,
   },
   alphabetLetters: {
     textAlign: "center",
