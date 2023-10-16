@@ -14,41 +14,54 @@ import lose from "./assets/lose.png";
 import gameOver from "./assets/gameOver.png";
 import ConfettiCannon from "react-native-confetti-cannon";
 import winImage from "./assets/winner.png";
-
+import { words8 } from "./words8";
 import { useEffect, useState } from "react";
 
 export default function App() {
   const [alphabetButtons, setAlphabetButtons] = useState();
   const [imageIndex, setImageIndex] = useState(0);
-  const [image, setImage] = useState(hangMan[0]);
-  const [word, setWord] = useState("BICICLETA");
+  const [image, setImage] = useState(null);
+  const [word, setWord] = useState();
   const [secretWord, setSecretWord] = useState();
-  const [separateLetters, setSeparateLetters] = useState([]);
   const [winner, setWinner] = useState(false);
+  const randomWord = words8[Math.floor(Math.random() * words8.length)];
+  useEffect(() => {
+    setWinner(false);
+    setImage(hangMan[1]);
+  }, []);
+  const newGame = () => {
+    setImageIndex(0);
+    setWinner(false);
+    setWord(randomWord);
+  };
 
   const gameOverFunction = () => {
     setImage(lose);
   };
   useEffect(() => {
-    const winnerFind = secretWord?.every((letter) => letter.visible === true);
+    const winnerFind =
+      secretWord?.length > 0 &&
+      secretWord.every((letter) => letter.visible === true);
     if (winnerFind) {
+      setImage(null);
       setWinner(true);
     }
   }, [secretWord]);
-
+  console.log("word", word);
   useEffect(() => {
     setAlphabetButtons(alpfabet);
-    setSeparateLetters(word.split(""));
+    setSecretWord(
+      word?.value
+        .toUpperCase()
+        .split("")
+        .map((val, index) => {
+          return { id: index, value: val, visible: false };
+        })
+    );
   }, [word]);
   useEffect(() => {
     setImage(hangMan[imageIndex]);
-  }, [imageIndex]);
-  useEffect(() => {
-    const toObjects = separateLetters.map((val, index) => {
-      return { id: index, value: val, visible: false };
-    });
-    setSecretWord(toObjects);
-  }, [word, separateLetters]);
+  }, [imageIndex, winner]);
 
   // every time when it pulse a letter, if isn't present, change the index of image//
   const changeNextImage = () => {
@@ -90,7 +103,15 @@ export default function App() {
 
   const reset = () => {
     setWinner(false);
-    setSeparateLetters(word.split(""));
+    setSecretWord(
+      word?.value
+        .toUpperCase()
+        .split("")
+        .map((val, index) => {
+          return { id: index, value: val, visible: false };
+        })
+    );
+    console.log("winner", winner);
     setImageIndex(0);
     const filteredLeters = alphabetButtons.map((object) => {
       if (object.visible === false) {
@@ -109,19 +130,24 @@ export default function App() {
           <Text style={styles.title}>HANG MAN - GAME</Text>
         </View>
       </SafeAreaView>
-      <View style={styles.image}>
-        <TouchableOpacity onPress={reset} style={styles.resetButton}>
-          <Text style={{ fontSize: 12 }}> RESET </Text>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity onPress={reset} style={styles.newGameButton}>
+          <Text style={styles.newGameText}> RESET </Text>
         </TouchableOpacity>
-        {winner && (
+        <TouchableOpacity onPress={newGame} style={styles.newGameButton}>
+          <Text style={styles.newGameText}>New Game</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.image}>
+        {/* {winner && (
           <Image
             style={{ width: "80%", height: "100%", resizeMode: "contain" }}
             source={winImage}
           />
-        )}
+        )} */}
         <Image
           style={{ width: "80%", height: "100%", resizeMode: "contain" }}
-          source={image}
+          source={!winner ? image : winImage}
         />
       </View>
 
@@ -165,7 +191,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffe4e1",
+    backgroundColor: "lightcyan",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -179,7 +205,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "grey",
   },
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  newGameButton: {
+    margin: 5,
+    height: 50,
+    width: 110,
+    backgroundColor: "#007bff", // Color de fondo del botón (azul en este caso)
+    padding: 15, // Espaciado interior
+    borderRadius: 15, // Borde redondeado para dar relieve
+    elevation: 3, // Nivel de sombra (para Android)
+    shadowColor: "rgba(0, 0, 0, 0.2)", // Color de la sombra (para iOS)
+    shadowOffset: { width: 0, height: 2 }, // Desplazamiento de la sombra (para iOS)
+    shadowOpacity: 1, // Opacidad de la sombra (para iOS)
+  },
+  newGameText: {
+    color: "white", // Color del texto
+    textAlign: "center",
+    fontWeight: "bold",
+  },
   resetButton: {
+    elevation: 3,
     marginVertical: 20,
     backgroundColor: "paleturquoise",
     display: "flex",
@@ -204,11 +252,9 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
   },
-  secretWord: {
-    marginHorizontal: 5,
-    fontSize: 23,
-  },
+
   visible: {
+    textAlign: "center",
     fontSize: 30,
     fontWeight: "bold",
     display: "flex",
