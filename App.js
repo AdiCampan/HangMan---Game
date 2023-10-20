@@ -31,8 +31,23 @@ export default function App() {
   const [winner, setWinner] = useState(false);
   const randomWord = words8[Math.floor(Math.random() * words8.length)];
 
-  async function play() {
+  async function winnGame() {
     await Audio.Sound.createAsync(require("./assets/audioWin.mp3"), {
+      shouldPlay: true,
+    });
+  }
+  async function loseGame() {
+    await Audio.Sound.createAsync(require("./assets/lose.mp3"), {
+      shouldPlay: true,
+    });
+  }
+  async function rigth() {
+    await Audio.Sound.createAsync(require("./assets/rigth.mp3"), {
+      shouldPlay: true,
+    });
+  }
+  async function fail() {
+    await Audio.Sound.createAsync(require("./assets/fail.mp3"), {
       shouldPlay: true,
     });
   }
@@ -49,6 +64,7 @@ export default function App() {
   };
 
   const gameOverFunction = () => {
+    loseGame();
     setAlphabetButtons();
     setImage(lose);
     setTip();
@@ -58,7 +74,7 @@ export default function App() {
       secretWord?.length > 0 &&
       secretWord.every((letter) => letter.visible === true);
     if (winnerFind) {
-      play();
+      winnGame();
       setAlphabetButtons();
       setImage(null);
       setWinner(true);
@@ -106,7 +122,9 @@ export default function App() {
       (object) => object.value === letter.value
     );
     if (coincidence.length > 0) {
+      rigth();
     } else {
+      fail();
       changeNextImage();
     }
     setSecretWord(filteredWord);
@@ -131,7 +149,6 @@ export default function App() {
           return { id: index, value: val, visible: false };
         })
     );
-    console.log("winner", winner);
     setImageIndex(0);
     const filteredLeters = alphabetButtons?.map((object) => {
       if (object.visible === false) {
@@ -140,7 +157,7 @@ export default function App() {
         return object;
       }
     });
-    setAlphabetButtons(filteredLeters);
+    setAlphabetButtons(alpfabet);
   };
 
   return (
