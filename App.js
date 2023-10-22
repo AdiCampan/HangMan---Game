@@ -53,8 +53,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    setWinner(false);
-    setImage(hangMan[1]);
+    // setWinner(false);
+    // setImage(hangMan[1]);
+    newGame();
   }, []);
   const newGame = () => {
     setImageIndex(0);
